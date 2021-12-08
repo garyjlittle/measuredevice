@@ -1,0 +1,10 @@
+[global]
+bs=${BS}
+iodepth=${IODEPTH}
+direct=1
+ioengine=libaio
+rw=randread
+
+[rr-single-oio]
+size=${SIZE}
+filename=${FIOFILE}
