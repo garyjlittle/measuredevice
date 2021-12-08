@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 
-ID=$(id -un)
-echo "ID is $ID"
-echo "Real User is $SUDO_USER"
+ if [ $(id -u) -eq 0 ] ; then
+  echo ""
+ else
+  echo "Please use sudo here"
+  exit 1
+fi
 
-while getopts "d:" Option
+while getopts "d:l" Option
 do
 	case $Option in
 	  d ) DEVICE=$OPTARG ;;
+          l ) sudo nvme list ; exit ;;
 	  ? ) echo "Unknown argument $OPTARG" ; exit ;;
 	esac
 done
@@ -21,7 +25,6 @@ else
 fi
 
 # !!! TODO - save the device name to a file in the result directory so we dont have to imply it from the filename.
-echo $DEVICE > device-under-test.out
 export FIOFILE=$DEVICE
 export BS=4k
 export IODEPTH=1
@@ -42,6 +45,9 @@ if [[ ! -d $RESULTDIR  ]] ; then
 	mkdir $RESULTDIR
 	sudo nvme list -o json > $RESULTDIR/nvme-list.json
 	cat /proc/cpuinfo > $RESULTDIR/cpuinfo
+        echo $DEVICE > $RESULTDIR/device-under-test.out
+        env > $RESULTDIR/env-vars.out
+        cp rr.fio $RESULTDIR/rr.fio
 fi
 
 
@@ -55,4 +61,5 @@ done
 echo ""
 echo "Done"
 echo
+python3 ./printout.py $RESULTDIR
 

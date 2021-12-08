@@ -13,9 +13,11 @@ if len(sys.argv)>1:
         exit(1)
     filedir=sys.argv[1]
     files=os.listdir(filedir)
+    print(filedir)
 
-
-devicename=filedir.split("-")[5]
+with open(os.path.join(filedir,"device-under-test.out")) as file:
+    devicepath=file.read()
+    devicename=os.path.basename(devicepath)
 
 for filename in files:
     with open(os.path.join(filedir,filename)) as file:
@@ -43,11 +45,13 @@ for filename in files:
     clat_us=float(format(clat_ns/1000,"3.2f"))
     #print("%3d OIO %s %s : %8d IOPS %d MB/s %5.2f uSec (Littles Law) %5.3f (fio clat) "% (oio,bs,rw,iops,bw_mbytes, respUsec*oio,clat_us))
     #resdir[oio]=str(oio)+str(iops)+str(bw_mbytes)
-    resdir[oio]=[oio,iops,clat_us,bw_mbytes]
+    resdir[oio]=[int(oio),int(iops),float(clat_us),int(bw_mbytes)]
     
 
 # print output to csv for gnuplot
-print("OIO IOPS clat (uSec) MB/s %s" % modelName)
-for key in sorted(resdir.keys()):
-    print(resdir[key])
+print("OIO IOPS clat (uSec) MB/s %s %s" % (modelName,devicename))
 
+print(f'{"OIO":>4} {"IOPS":>7} {"clat(Us)":>7} {"MB/s":>8}')
+for key in sorted(resdir.keys()):
+    oio,iops,clat,mbs=(resdir[key])
+    print(f'{oio:4d} {iops:7d} {clat:7.2f} {mbs:8d}')
